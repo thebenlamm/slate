@@ -1,239 +1,169 @@
 ---
-title: API Reference
+title: FraudFix API
 
 language_tabs: # must be one of https://git.io/vQNgJ
   - shell
-  - ruby
-  - python
   - javascript
 
 toc_footers:
-  - <a href='#'>Sign Up for a Developer Key</a>
   - <a href='https://github.com/slatedocs/slate'>Documentation Powered by Slate</a>
 
 includes:
-  - errors
+  - footer
 
 search: true
 ---
 
 # Introduction
 
-Welcome to the Kittn API! You can use our API to access Kittn API endpoints, which can get information on various cats, kittens, and breeds in our database.
+Welcome to the FraudFix JSON API. Use this API to easily and securely submit new orders and to check on existing orders.
 
-We have language bindings in Shell, Ruby, Python, and JavaScript! You can view code examples in the dark area to the right, and you can switch the programming language of the examples with the tabs in the top right.
-
-This example API documentation page was created with [Slate](https://github.com/slatedocs/slate). Feel free to edit it and use it as a base for your own API's documentation.
+To use the FraudFix API, you must have an API key. Visit our website [FraudFix.com](https://fraudfix.com/) for more information.
 
 # Authentication
 
-> To authorize, use this code:
+FraudFix uses API keys to grant access to its API. Your API key should be included in the header of all API requests in the following format:
 
-```ruby
-require 'kittn'
-
-api = Kittn::APIClient.authorize!('meowmeowmeow')
-```
-
-```python
-import kittn
-
-api = kittn.authorize('meowmeowmeow')
-```
-
-```shell
-# With shell, you can just pass the correct header with each request
-curl "api_endpoint_here"
-  -H "Authorization: meowmeowmeow"
-```
-
-```javascript
-const kittn = require('kittn');
-
-let api = kittn.authorize('meowmeowmeow');
-```
-
-> Make sure to replace `meowmeowmeow` with your API key.
-
-Kittn uses API keys to allow access to the API. You can register a new Kittn API key at our [developer portal](http://example.com/developers).
-
-Kittn expects for the API key to be included in all API requests to the server in a header that looks like the following:
-
-`Authorization: meowmeowmeow`
+`X-API-Key: your_api_key`
 
 <aside class="notice">
-You must replace <code>meowmeowmeow</code> with your personal API key.
+Remember to replace <code>your_api_key</code> with your personal API key.
 </aside>
 
-# Kittens
+# Orders
 
-## Get All Kittens
-
-```ruby
-require 'kittn'
-
-api = Kittn::APIClient.authorize!('meowmeowmeow')
-api.kittens.get
-```
-
-```python
-import kittn
-
-api = kittn.authorize('meowmeowmeow')
-api.kittens.get()
-```
+## Submit an Order
 
 ```shell
-curl "http://example.com/api/kittens"
-  -H "Authorization: meowmeowmeow"
+curl https://api.fraudfix.com/order \
+  -X POST \
+  -H 'Content-Type: application/json' \
+  -H "X-API-Key: your_api_key" \
+  -d '{
+        "orderNumber": "12345",
+        "siteName": "MY-SITE-NAME",
+        "grandTotal": 49.99,
+        "orderDate": "2020-03-17T12:43:59-05:00",
+        "customerId": "54321",
+        "loginName": "dvader",
+        "loginPassword": "Skywa1ker"
+  }'
 ```
 
 ```javascript
-const kittn = require('kittn');
-
-let api = kittn.authorize('meowmeowmeow');
-let kittens = api.kittens.get();
+const axios = require('axios');
+axios.post('https://api.fraudfix.com/order', 
+    {
+        "orderNumber": "12345",
+        "siteName": "MY-SITE-NAME",
+        "grandTotal": 49.99,
+        "orderDate": "2020-03-17T12:43:59-05:00",
+        "customerId": "54321",
+        "loginName": "dvader",
+        "loginPassword": "Skywa1ker"
+    },
+    {
+    headers: {'X-API-Key': 'your_api_key'}
+    });
 ```
 
-> The above command returns JSON structured like this:
+> Example Response
 
-```json
-[
-  {
-    "id": 1,
-    "name": "Fluffums",
-    "breed": "calico",
-    "fluffiness": 6,
-    "cuteness": 7
-  },
-  {
-    "id": 2,
-    "name": "Max",
-    "breed": "unknown",
-    "fluffiness": 5,
-    "cuteness": 10
-  }
-]
+``` 
+202 Accepted
 ```
 
-This endpoint retrieves all kittens.
+Submit an order to our fraud engines to be analyzed and graded.
 
-### HTTP Request
+### Request
 
-`GET http://example.com/api/kittens`
+`POST https://api.fraudfix.com/order`
 
-### Query Parameters
+You must include API KEY in the header of the POST request. The POST /order endpoint lets you submit a single order for analysis. A successful POST returns the FraudFix OrderId in the Location header.
 
-Parameter | Default | Description
---------- | ------- | -----------
-include_cats | false | If set to true, the result will also include cats.
-available | true | If set to false, the result will include kittens that have already been adopted.
+### Parameters
 
-<aside class="success">
-Remember — a happy kitten is an authenticated kitten!
-</aside>
+Name | Type | Required | Description
+--------- | ---- | -------- | -----------
+<code>orderNumber</code> | string | Required | 
+<code>siteName</code> | string | Required | 
+<code>grandTotal</code> | number | Required | 
+<code>orderDate</code> | datetime | Required | 
+<code>customerId</code> | string | Optional | 
+<code>loginName</code> | string | Optional | 
+<code>loginPassword</code> | string | Optional |               
+<code>billing</code> | [AddressInfo](#address) | Optional | 
+<code>shipping</code> | [AddressInfo](#address) | Optional | 
 
-## Get a Specific Kitten
+### Response
+Status | Meaning
+------ | -------
+202 | Accepted for processing
+400 | Bad request
+401 | Unauthorized
 
-```ruby
-require 'kittn'
-
-api = Kittn::APIClient.authorize!('meowmeowmeow')
-api.kittens.get(2)
-```
-
-```python
-import kittn
-
-api = kittn.authorize('meowmeowmeow')
-api.kittens.get(2)
-```
+## Get an order
 
 ```shell
-curl "http://example.com/api/kittens/2"
-  -H "Authorization: meowmeowmeow"
+curl "https://api.fraudfix.com/order/1234" /
+  -H "X-API-Key: your_api_key"
 ```
 
 ```javascript
-const kittn = require('kittn');
-
-let api = kittn.authorize('meowmeowmeow');
-let max = api.kittens.get(2);
+const axios = require('axios');
+axios.get('https://api.fraudfix.com/order/1234', 
+    { headers: {'X-API-Key': 'your_api_key'} }
+    );
 ```
 
 > The above command returns JSON structured like this:
 
 ```json
 {
-  "id": 2,
-  "name": "Max",
-  "breed": "unknown",
-  "fluffiness": 5,
-  "cuteness": 10
+  "orderId": 1234,
+  "score": 2,
+  "insured": "Y"
 }
 ```
 
-This endpoint retrieves a specific kitten.
+This endpoint retrieves the status of a specific order
 
-<aside class="warning">Inside HTML code blocks like this one, you can't use Markdown, so use <code>&lt;code&gt;</code> blocks to denote code.</aside>
 
-### HTTP Request
+### Request
 
-`GET http://example.com/kittens/<ID>`
-
-### URL Parameters
-
-Parameter | Description
---------- | -----------
-ID | The ID of the kitten to retrieve
-
-## Delete a Specific Kitten
-
-```ruby
-require 'kittn'
-
-api = Kittn::APIClient.authorize!('meowmeowmeow')
-api.kittens.delete(2)
-```
-
-```python
-import kittn
-
-api = kittn.authorize('meowmeowmeow')
-api.kittens.delete(2)
-```
-
-```shell
-curl "http://example.com/api/kittens/2"
-  -X DELETE
-  -H "Authorization: meowmeowmeow"
-```
-
-```javascript
-const kittn = require('kittn');
-
-let api = kittn.authorize('meowmeowmeow');
-let max = api.kittens.delete(2);
-```
-
-> The above command returns JSON structured like this:
-
-```json
-{
-  "id": 2,
-  "deleted" : ":("
-}
-```
-
-This endpoint deletes a specific kitten.
-
-### HTTP Request
-
-`DELETE http://example.com/kittens/<ID>`
+`GET https://api.fraudfix.com/<orderId>`
 
 ### URL Parameters
 
-Parameter | Description
+Name | Description
 --------- | -----------
-ID | The ID of the kitten to delete
+<code>orderId</code> | The orderId returned from the POST order api
 
+### Response
+Status | Meaning
+------ | -------
+200 | OK
+401 | Unauthorized
+404 | Not Found
+
+## Order Schemas
+
+### AddressInfo
+
+### Properties
+Name | Type | Required | Description
+--------- | ---- | -------- | -----------
+<code>firstName</code> | string | Optional | 
+<code>middleName</code> | string | Optional | 
+<code>lastName</code> | string | Optional | 
+<code>company</code> | string | Optional |
+<code>address1</code> | string | Required | 
+<code>address2</code> | string | Optional |
+<code>city</code> | string | Optional | 
+<code>state</code> | string | Optional | 
+<code>country</code> | string | Required | two character country code
+<code>zip</code> | string | Optional | 
+<code>eveningPhone</code> | string | Optional | 
+<code>dayPhone</code> | string | Optional | 
+<code>cellPhone</code> | string | Optional | 
+<code>email</code> | string | Optional | 
